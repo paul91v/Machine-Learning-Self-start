@@ -32,9 +32,9 @@ full$Survived = as.factor(full$Survived)
 full$FamilySize = full$Parch + full$SibSp + 1
 
 #Extracting FamilyNames
-#full$surname = sapply(full$Name, function(x)strsplit(x, split = '[,.]')[[1]][1])
-#full$FamilyID = paste(as.character(full$FamilySize), full$surname, sep = "")
-#full$FamilyID[full$FamilySize<=2] = 'Small'
+full$surname = sapply(full$Name, function(x)strsplit(x, split = '[,.]')[[1]][1])
+full$FamilyID = paste(as.character(full$FamilySize), full$surname, sep = "")
+full$FamilyID[full$FamilySize <= 3] <- 'Small'
 
 #Splitting the data into test and training set
 titanic = full[1:891,]
@@ -50,6 +50,7 @@ prop.table(table(titanic$Survived, titanic$Sex))
 
 #Evaluating LDA
 control <- trainControl(method = 'cv', number = 20)
+#(cv20 produced 0.799, cv5 0.77)
 metric <- 'Accuracy'
 #titanic.lda = train(Survived~Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + title, data = titanic,method = "lda", metric = metric, trControl = control)
 titanic.cart = train(Survived~Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + title + FamilySize, data = titanic,method = "rpart", metric = metric, trControl = control)
@@ -68,9 +69,10 @@ print(titanic.rf)
 #(removing error checking on 07-11)
 
 #Calculating the values for Kaggle Test data
-KagglePredict = predict(titanic.rf, KaggleTest)
+KagglePredict = predict(titanic.cart, KaggleTest)
+
 
 #Exporting the Solution
 KaggleSubmit = data.frame(KaggleTest$PassengerId, KagglePredict)
 colnames(KaggleSubmit) = c("PassengerId","Survived")
-write.csv(KaggleSubmit, file = "G:/Kaggle titanic data/titanic-rf-cv20-fe-09-11 .csv", row.names = FALSE)
+write.csv(KaggleSubmit, file = "G:/Kaggle titanic data/titanic-cart-cv20-fe-09-11 .csv", row.names = FALSE)
